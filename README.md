@@ -6,6 +6,8 @@ Application for exporting your tasks from Asana. It allows to download all tasks
 
 The jar is located in the folder `/build/libs`.
 
+You can download built project from https://pablo127.bitbucket.io/asanaexporter/asanaexporter-all-1.0.0.jar
+
 ## Run
 Run exporter by:
 
