@@ -8,7 +8,6 @@ import java.util.Map;
 
 @Data
 public class UserData {
-	private String[] data;
     private String id;
     private String email;
     private String name;
