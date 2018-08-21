@@ -126,13 +126,12 @@ public class Main {
     }
 
     private String getAssigneeName(TaskShortAssignee assignee) {
-        if (assignee == null)
-            return "";
-
-        if (!assignee.getId().equals(userDownloadCommand.getUserId()))
-            throw new RuntimeException("AssigneeId " + assignee.getId() + " is not equal to user id!");
-
-        return userDownloadCommand.getUserName();
+    	if (assignee == null) {
+    		return "";
+    	}else {
+    		String user = userDownloadCommand.getAllUsers().get(assignee.getId());
+    		return user != null ? user : "";
+    	}
     }
 
     private String[] fixNewLines(String... texts) {
