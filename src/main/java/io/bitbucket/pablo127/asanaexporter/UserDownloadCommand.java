@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class UserDownloadCommand implements Runnable {
 
@@ -23,7 +24,7 @@ public class UserDownloadCommand implements Runnable {
     private String userName;
     
     @Getter
-    private HashMap<String, String> allUsers = new HashMap<String, String>();
+    private Map<String, String> allUsers = new HashMap<String, String>();
 
     @Getter
     private List<String> workspaceIds = new ArrayList<String>();
