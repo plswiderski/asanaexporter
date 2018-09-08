@@ -8,7 +8,7 @@ Tutorial for this repo is available on my blog: https://medium.com/@pablo127/exp
 
 The jar is located in the folder `/build/libs`.
 
-You can download built project from https://pablo127.bitbucket.io/asanaexporter/asanaexporter-all-1.0.0.jar
+You can download built project from https://pablo127.bitbucket.io/asanaexporter/asanaexporter-all-1.0.1.jar
 
 ## Run
 Run exporter by:
