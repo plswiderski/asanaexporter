@@ -1,5 +1,6 @@
 package io.bitbucket.pablo127.asanaexporter;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import io.bitbucket.pablo127.asanaexporter.util.SleepUtil;
@@ -26,6 +27,7 @@ public class Requester<T> {
     public Requester(Class<T> type) {
         this.type = type;
         objectMapper = new ObjectMapper()
+                .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
                 .registerModule(new JavaTimeModule());
     }
 
