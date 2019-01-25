@@ -33,6 +33,7 @@ public class UserDownloadCommand implements Runnable {
     public void run() {
         try {
             Requester<User> requester = new Requester<>(User.class);
+            System.out.println(requester.request(new UriBuilder().uri("https://app.asana.com/api/1.0/users/me")));
             UserData userData = requester.request(new UriBuilder().uri("https://app.asana.com/api/1.0/users/me"))
                     .getData();
         	
@@ -44,7 +45,7 @@ public class UserDownloadCommand implements Runnable {
 			}
             this.workspaceId = workspaceIds.get(0);
             
-            userId = userData.getId();
+            userId = userData.getGid();
             userName = userData.getName();
             Requester<UserMap> requesterWorkspace = new Requester<>(UserMap.class);
             
@@ -53,7 +54,7 @@ public class UserDownloadCommand implements Runnable {
             	List<HashMap<String, String>> userMap = requesterWorkspace.request(new UriBuilder().uri("https://app.asana.com/api/1.0/workspaces/" + workspaceID + "/users")).getData();
             	if(userMap != null && !userMap.isEmpty()) {
             		for(int i=0; i < userMap.size(); i++) {
-            			String id = userMap.get(i).get("id");
+            			String id = userMap.get(i).get("gid");
             			if(allUsers.get(id) == null){
             				allUsers.put(id, userMap.get(i).get("name"));
             			}
