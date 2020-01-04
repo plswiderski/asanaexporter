@@ -3,10 +3,14 @@ package io.bitbucket.pablo127.asanaexporter;
 import io.bitbucket.pablo127.asanaexporter.model.user.User;
 import io.bitbucket.pablo127.asanaexporter.model.user.UserData;
 import lombok.Getter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
 public class UserDownloadCommand implements Runnable {
+
+    private static final Logger logger = LoggerFactory.getLogger(UserDownloadCommand.class);
 
     @Getter
     private String workspaceId;
@@ -29,6 +33,8 @@ public class UserDownloadCommand implements Runnable {
                     .getGid();
             userId = userData.getGid();
             userName = userData.getName();
+
+            logger.info("Downloaded userData.");
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
