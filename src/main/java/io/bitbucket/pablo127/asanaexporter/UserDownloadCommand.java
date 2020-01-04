@@ -26,8 +26,8 @@ public class UserDownloadCommand implements Runnable {
 
             workspaceId = userData.getWorkspaces()
                     .get(0)
-                    .getId();
-            userId = userData.getId();
+                    .getGid();
+            userId = userData.getGid();
             userName = userData.getName();
         } catch (IOException e) {
             throw new RuntimeException(e);

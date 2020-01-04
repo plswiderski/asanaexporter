@@ -4,5 +4,5 @@ import lombok.Data;
 
 @Data
 public class TaskShortAssignee {
-    private String id;
+    private String gid;
 }

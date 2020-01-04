@@ -8,7 +8,7 @@ import java.util.Map;
 
 @Data
 public class UserData {
-    private String id;
+    private String gid;
     private String email;
     private String name;
     private Map<String, String> photo;

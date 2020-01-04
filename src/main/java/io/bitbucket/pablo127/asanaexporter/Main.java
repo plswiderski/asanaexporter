@@ -82,7 +82,7 @@ public class Main {
 
         for (TaskShort task : tasks) {
             stringBuilder.append(
-                    String.join(";", fixNewLines(task.getId(), task.getCreatedAt(),
+                    String.join(";", fixNewLines(task.getGid(), task.getCreatedAt(),
                             task.getCompletedAt(), task.getDueOn(), task.getModifiedAt(), task.getName(),
                             getAssigneeName(task.getAssignee()), task.getNotes(),
                             getProjectNames(task.getProjects()),
@@ -97,12 +97,12 @@ public class Main {
             return "";
 
         Optional<TaskShort> first = tasks.stream()
-                .filter(taskShort -> taskShort.getId().equals(parent.getId()))
+                .filter(taskShort -> taskShort.getGid().equals(parent.getGid()))
                 .findFirst();
 
         if (!first.isPresent()) {
-            logger.error("Could not find subtask with id " + parent.getId());
-            return parent.getId();
+            logger.error("Could not find subtask with id " + parent.getGid());
+            return parent.getGid();
         }
         return first.get()
                 .getName();
@@ -115,9 +115,9 @@ public class Main {
         return projects.stream()
                 .map(taskShortProject -> {
                     String projectName = projectsDownloadCommand.getProjectIdToProjectNameMap()
-                            .get(taskShortProject.getId());
+                            .get(taskShortProject.getGid());
                     if (projectName == null) {
-                        throw new RuntimeException("ProjectId " + taskShortProject.getId() + " was not " +
+                        throw new RuntimeException("ProjectId " + taskShortProject.getGid() + " was not " +
                                 "recognized as an ID from user's projects.");
                     }
                     return projectName;
@@ -129,8 +129,8 @@ public class Main {
         if (assignee == null)
             return "";
 
-        if (!assignee.getId().equals(userDownloadCommand.getUserId()))
-            throw new RuntimeException("AssigneeId " + assignee.getId() + " is not equal to user id!");
+        if (!assignee.getGid().equals(userDownloadCommand.getUserId()))
+            throw new RuntimeException("AssigneeId " + assignee.getGid() + " is not equal to user id!");
 
         return userDownloadCommand.getUserName();
     }

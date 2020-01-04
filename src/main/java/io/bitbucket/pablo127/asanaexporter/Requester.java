@@ -61,6 +61,7 @@ public class Requester<T> {
     private Headers createHeaders() {
         return new Headers.Builder()
                 .add("Authorization", "Bearer " + personalAccessToken)
+                .add("Accept", "application/json")
                 .build();
     }
 

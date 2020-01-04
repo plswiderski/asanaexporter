@@ -21,7 +21,7 @@ public class ProjectsDownloadCommand implements Runnable {
             List<Project> projects = requester.request(new UriBuilder().uri("https://app.asana.com/api/1.0/projects"))
                     .getData();
 
-            projects.forEach(project -> projectIdToProjectNameMap.put(project.getId(), project.getName()));
+            projects.forEach(project -> projectIdToProjectNameMap.put(project.getGid(), project.getName()));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
