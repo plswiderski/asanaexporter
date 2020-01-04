@@ -45,6 +45,7 @@ class NextTasksDownloadCommand implements Runnable {
                     executorService.submit(new NextTasksDownloadCommand(executorService, tasks.getNextPage(),
                             this.tasks, shutdownCounter));
                     this.tasks.addAll(tasks.getData());
+                    logger.info("Downloaded {} tasks.", this.tasks.size());
                 } catch (IOException e) {
                     logger.error("Unexpected exception occurred.", e);
                 }

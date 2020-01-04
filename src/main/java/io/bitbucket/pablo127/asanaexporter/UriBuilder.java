@@ -3,12 +3,14 @@ package io.bitbucket.pablo127.asanaexporter;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-public class UriBuilder {
+final class UriBuilder {
+
+    private static final String BASE_PATH = "https://app.asana.com/api/1.0/";
 
     private URL url;
 
     public UriBuilder findTasks(String workspaceId, String assigneeId) throws MalformedURLException {
-        url = new URL("https://app.asana.com/api/1.0/tasks?workspace=" + workspaceId + "&assignee=" + assigneeId
+        url = new URL(BASE_PATH + "tasks?workspace=" + workspaceId + "&assignee=" + assigneeId
                 + "&limit=100&opt_fields=completed_at,due_on,name,notes,projects,created_at,modified_at," +
                 "assignee,parent");
 
@@ -16,7 +18,7 @@ public class UriBuilder {
     }
 
     public UriBuilder findTasksByProject(String projectId) throws MalformedURLException {
-        url = new URL("https://app.asana.com/api/1.0/tasks?project=" + projectId + "&limit=100&" +
+        url = new URL(BASE_PATH + "tasks?project=" + projectId + "&limit=100&" +
                 "opt_fields=completed_at,due_on,name,notes,projects,created_at,modified_at,assignee,parent");
 
         return this;

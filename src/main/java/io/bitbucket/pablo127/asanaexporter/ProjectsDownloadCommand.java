@@ -3,6 +3,8 @@ package io.bitbucket.pablo127.asanaexporter;
 import io.bitbucket.pablo127.asanaexporter.model.Project;
 import io.bitbucket.pablo127.asanaexporter.model.ProjectRequest;
 import lombok.Getter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -10,6 +12,8 @@ import java.util.List;
 import java.util.Map;
 
 public class ProjectsDownloadCommand implements Runnable {
+
+    private static final Logger logger = LoggerFactory.getLogger(ProjectsDownloadCommand.class);
 
     @Getter
     private Map<String, String> projectIdToProjectNameMap = new HashMap<>();
@@ -21,7 +25,8 @@ public class ProjectsDownloadCommand implements Runnable {
             List<Project> projects = requester.request(new UriBuilder().uri("https://app.asana.com/api/1.0/projects"))
                     .getData();
 
-            projects.forEach(project -> projectIdToProjectNameMap.put(project.getId(), project.getName()));
+            projects.forEach(project -> projectIdToProjectNameMap.put(project.getGid(), project.getName()));
+            logger.info("Downloaded {} projects.", projects.size());
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
