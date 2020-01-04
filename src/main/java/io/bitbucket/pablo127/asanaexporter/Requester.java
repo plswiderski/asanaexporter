@@ -1,6 +1,8 @@
 package io.bitbucket.pablo127.asanaexporter;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import io.bitbucket.pablo127.asanaexporter.util.SleepUtil;
@@ -37,7 +39,7 @@ public class Requester<T> {
             response = okHttpClient.newCall(createRequest(uriBuilder.getUrl()))
                     .execute();
 
-            if (!response.isSuccessful())
+            if (!response.isSuccessful() || response.body() == null)
                 handleError(response);
 
             return objectMapper.readValue(response.body().string(), type);
@@ -46,7 +48,8 @@ public class Requester<T> {
             SleepUtil.sleep(30000);
             return request(uriBuilder);
         } finally {
-            response.body().close();
+            if (response != null && response.body() != null)
+                response.body().close();
         }
     }
 
@@ -69,6 +72,6 @@ public class Requester<T> {
         if (response.code() == 429)
             throw new RetryException();
 
-        logger.error("Unexpected error occurred: " + response.body().string());
+        logger.error("Unexpected error occurred: " + (response.body() != null ? response.body().string() : "response body is null"));
     }
 }

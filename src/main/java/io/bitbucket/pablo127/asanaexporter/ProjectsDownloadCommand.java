@@ -15,14 +15,20 @@ public class ProjectsDownloadCommand implements Runnable {
 
     private static final Logger logger = LoggerFactory.getLogger(ProjectsDownloadCommand.class);
 
+    private final String workspaceId;
+
     @Getter
     private Map<String, String> projectIdToProjectNameMap = new HashMap<>();
+
+    public ProjectsDownloadCommand(String workspaceId) {
+        this.workspaceId = workspaceId;
+    }
 
     @Override
     public void run() {
         try {
             Requester<ProjectRequest> requester = new Requester<>(ProjectRequest.class);
-            List<Project> projects = requester.request(new UriBuilder().uri("https://app.asana.com/api/1.0/projects"))
+            List<Project> projects = requester.request(new UriBuilder().findProjects(workspaceId))
                     .getData();
 
             projects.forEach(project -> projectIdToProjectNameMap.put(project.getGid(), project.getName()));

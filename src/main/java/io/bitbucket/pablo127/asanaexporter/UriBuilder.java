@@ -24,6 +24,18 @@ final class UriBuilder {
         return this;
     }
 
+    public UriBuilder findWorkspacesUsers(String workspaceId) throws MalformedURLException {
+        url = new URL(BASE_PATH + "workspaces/" + workspaceId + "/users");
+
+        return this;
+    }
+
+    public UriBuilder findProjects(String workspaceId) throws MalformedURLException {
+        url = new URL(BASE_PATH + "projects?workspace=" + workspaceId);
+
+        return this;
+    }
+
     public UriBuilder uri(String uri) throws MalformedURLException {
         url = new URL(uri);
 

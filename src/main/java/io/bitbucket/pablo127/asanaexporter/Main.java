@@ -1,7 +1,9 @@
 package io.bitbucket.pablo127.asanaexporter;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.io.Files;
 import io.bitbucket.pablo127.asanaexporter.model.*;
+import io.bitbucket.pablo127.asanaexporter.model.user.UserData;
 import io.bitbucket.pablo127.asanaexporter.util.SleepUtil;
 import lombok.Getter;
 import org.apache.commons.text.StringEscapeUtils;
@@ -24,6 +26,7 @@ public class Main {
     private static final Logger logger = LoggerFactory.getLogger(Main.class);
 
     static String personalAccessToken;
+    private static String workspaceName;
 
     private final ExecutorService executorService;
 
@@ -36,6 +39,7 @@ public class Main {
     public static void main(String[] args) {
         setDefaultUncaughtExceptionHandler();
         personalAccessToken = args[0];
+        workspaceName = args.length < 2 ? "Personal Projects" : args[1];
 
         long startTimestamp = System.currentTimeMillis();
         try {
@@ -126,11 +130,15 @@ public class Main {
     }
 
     private String getAssigneeName(TaskShortAssignee assignee) {
-    	if (assignee == null) {
+    	if (assignee == null || assignee.getGid() == null) {
     		return "";
     	} else {
-     		String user = userDownloadCommand.getAllUsers().get(assignee.getGId());
-    		return user != null ? user : "";
+     		return userDownloadCommand.getUsers()
+                    .stream()
+                    .filter(userData -> assignee.getGid().equals(userData.getGid()))
+                    .map(UserData::getName)
+                    .findFirst()
+                    .orElse("");
     	}
     }
 
@@ -148,10 +156,10 @@ public class Main {
 
     private Main(ExecutorService executorService) {
         this.executorService = executorService;
-        userDownloadCommand = new UserDownloadCommand();
+        userDownloadCommand = new UserDownloadCommand(workspaceName);
         userDownloadCommand.run();
 
-        projectsDownloadCommand = new ProjectsDownloadCommand();
+        projectsDownloadCommand = new ProjectsDownloadCommand(userDownloadCommand.getWorkspaceId());
         projectsDownloadCommand.run();
     }
 

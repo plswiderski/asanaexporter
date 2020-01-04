@@ -10,7 +10,7 @@ public class TaskShort {
     private String gid;
     private String name;
     private String notes;
-    
+
     @JsonProperty("due_on")
     private String dueOn;
 

@@ -6,5 +6,4 @@ import lombok.Data;
 public class Project {
     private String gid;
     private String name;
-    private String resource_type;
 }
