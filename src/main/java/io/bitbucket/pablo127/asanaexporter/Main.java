@@ -1,8 +1,10 @@
 package io.bitbucket.pablo127.asanaexporter;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.google.common.io.Files;
-import io.bitbucket.pablo127.asanaexporter.model.*;
+import io.bitbucket.pablo127.asanaexporter.model.Parent;
+import io.bitbucket.pablo127.asanaexporter.model.TaskShort;
+import io.bitbucket.pablo127.asanaexporter.model.TaskShortAssignee;
+import io.bitbucket.pablo127.asanaexporter.model.TaskShortProject;
+import io.bitbucket.pablo127.asanaexporter.model.Tasks;
 import io.bitbucket.pablo127.asanaexporter.model.user.UserData;
 import io.bitbucket.pablo127.asanaexporter.util.SleepUtil;
 import lombok.Getter;
@@ -12,12 +14,17 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -80,20 +87,19 @@ public class Main {
     }
 
     private void generateCsv() throws IOException {
-        StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append("id;createdAt;completedAt;dueOn;modifiedAt;name;assignee;notes;" +
-                "projects;parentTask\n");
+        List<String> lines = new ArrayList<>();
+        lines.add("id;createdAt;completedAt;dueOn;modifiedAt;name;assignee;notes;" +
+                "projects;parentTask");
 
         for (TaskShort task : tasks) {
-            stringBuilder.append(
+            lines.add(
                     String.join(";", fixNewLines(task.getGid(), task.getCreatedAt(),
                             task.getCompletedAt(), task.getDueOn(), task.getModifiedAt(), task.getName(),
                             getAssigneeName(task.getAssignee()), task.getNotes(),
                             getProjectNames(task.getProjects()),
-                            getTaskName(task.getParent()))))
-                    .append("\n");
+                            getTaskName(task.getParent()))));
         }
-        Files.write(stringBuilder.toString(), new File("asanaTasks.csv"), Charset.forName("UTF-8"));
+        Files.write(new File("asanaTasks.csv").toPath(), lines, StandardCharsets.UTF_8);
     }
 
     private String getTaskName(Parent parent) {
@@ -130,16 +136,16 @@ public class Main {
     }
 
     private String getAssigneeName(TaskShortAssignee assignee) {
-    	if (assignee == null || assignee.getGid() == null) {
-    		return "";
-    	} else {
-     		return userDownloadCommand.getUsers()
+        if (assignee == null || assignee.getGid() == null) {
+            return "";
+        } else {
+            return userDownloadCommand.getUsers()
                     .stream()
                     .filter(userData -> assignee.getGid().equals(userData.getGid()))
                     .map(UserData::getName)
                     .findFirst()
                     .orElse("");
-    	}
+        }
     }
 
     private String[] fixNewLines(String... texts) {
