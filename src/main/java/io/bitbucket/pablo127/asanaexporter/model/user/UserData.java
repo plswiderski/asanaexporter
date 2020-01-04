@@ -11,6 +11,7 @@ public class UserData {
     private String gid;
     private String email;
     private String name;
+    private String resource_type;
     private Map<String, String> photo;
     private List<Workspace> workspaces;
 }

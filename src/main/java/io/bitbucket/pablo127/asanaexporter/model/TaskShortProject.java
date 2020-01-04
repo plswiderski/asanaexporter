@@ -5,4 +5,5 @@ import lombok.Data;
 @Data
 public class TaskShortProject {
     private String gid;
+    private String resource_type;
 }
