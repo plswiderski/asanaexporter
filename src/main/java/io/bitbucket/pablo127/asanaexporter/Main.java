@@ -59,7 +59,10 @@ public final class Main {
             ExecutorService executorService = createExecutorService();
             Main main = new Main(executorService);
 
-            logger.info("Start importing tasks.");
+            logger.info("Start importing tasks" +
+                    (modifiedSince != null
+                            ? " from last modification date " + modifiedSince +"."
+                            : " from the beginning."));
             main.importTasks();
 
             waitToTheEndOfImport(executorService);

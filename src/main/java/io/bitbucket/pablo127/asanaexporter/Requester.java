@@ -14,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.net.SocketTimeoutException;
 import java.net.URL;
 
 import static io.bitbucket.pablo127.asanaexporter.Main.personalAccessToken;
@@ -34,22 +35,17 @@ public class Requester<T> {
     }
 
     public T request(UriBuilder uriBuilder) throws IOException {
-        Response response = null;
-        try {
-            response = okHttpClient.newCall(createRequest(uriBuilder.getUrl()))
-                    .execute();
+        try (Response response = okHttpClient.newCall(createRequest(uriBuilder.getUrl()))
+                .execute()) {
 
             if (!response.isSuccessful() || response.body() == null)
                 handleError(response);
 
             return objectMapper.readValue(response.body().string(), type);
-        } catch (RetryException e) {
+        } catch (RetryException | SocketTimeoutException e) {
             logger.warn("We need to retry!");
             SleepUtil.sleep(30000);
             return request(uriBuilder);
-        } finally {
-            if (response != null && response.body() != null)
-                response.body().close();
         }
     }
 
