@@ -10,16 +10,16 @@ Tutorials for this tool are available on my blog:
 
 The jar is located in the folder `/build/libs`.
 
-You can download built project from https://pablo127.bitbucket.io/asanaexporter/asanaexporter-all-1.1.0.jar
+You can download built project from https://pablo127.bitbucket.io/asanaexporter/asanaexporter-all-1.1.1.jar
 
 ## Run
 Run exporter by:
 
-`java -jar asanaexporter-all-1.1.0.jar $personalAccessToken`
+`java -jar asanaexporter-all-1.1.1.jar $personalAccessToken`
 
 or
 
-`java -jar asanaexporter-all-1.1.0.jar $personalAccessToken "YOUR WORKSPACE NAME"`
+`java -jar asanaexporter-all-1.1.1.jar $personalAccessToken "YOUR WORKSPACE NAME"`
 
 personalAccessToken is an authorization token for your asana account (more: https://asana.com/developers/documentation/getting-started/auth#personal-access-token). You can generate it from asana settings panel, click on your logo (top right corner) in asana webpanel. Then select `My Profile Settings > Apps > Manage Developer Apps > Create New Personal Access Token`. 
 
