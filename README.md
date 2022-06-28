@@ -2,8 +2,8 @@
 Application for exporting your tasks from Asana. It allows to download all tasks that you have saved in Asana Cloud. With asana's export it is possible to get only 2000 tasks.
 
 Tutorials for this tool are available on my blog: 
-* https://medium.com/@plswiderski/exporting-tasks-from-asana-for-backup-and-analytic-9780567e430f
-* https://medium.com/@plswiderski/asanaexporter-v1-1-new-features-30a60067f52b
+* https://plswiderski.medium.com/exporting-tasks-from-asana-for-backup-and-analytic-9780567e430f
+* https://plswiderski.medium.com/asanaexporter-v1-1-new-features-30a60067f52b
 
 ## Build project
 `gradlew build fatjar`
