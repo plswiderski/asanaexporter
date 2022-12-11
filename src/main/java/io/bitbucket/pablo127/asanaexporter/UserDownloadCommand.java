@@ -41,17 +41,16 @@ public class UserDownloadCommand implements Runnable {
                     .getData();
 
             this.workspaces = userData.getWorkspaces();
-            this.workspaceId = workspaces.get(0).getGid();
-
-            userId = userData.getGid();
-
-            users = findUsers();
-
-            workspaceId = workspaces.stream()
+            this.workspaceId = workspaces.stream()
                     .filter(workspace -> workspace.getName().equals(givenWorkspaceName))
                     .map(Workspace::getGid)
                     .findFirst()
                     .orElseThrow(() -> new RuntimeException("Could not find workspace with name " + givenWorkspaceName));
+
+            userId = userData.getGid();
+
+            users = findUsers();
+            addOwnerToUsers(users, userData);
 
             logger.info("Downloaded userData.");
         } catch (IOException e) {
@@ -59,9 +58,23 @@ public class UserDownloadCommand implements Runnable {
         }
     }
 
+    private void addOwnerToUsers(List<UserData> users, UserData ownerUserData) {
+        UserData ownerUserDataToAdd = UserData.builder()
+                .gid(ownerUserData.getGid())
+                .name(ownerUserData.getName())
+                .resourceType(ownerUserData.getResourceType())
+                .build();
+
+        if (!users.contains(ownerUserDataToAdd))
+            users.add(ownerUserData);
+    }
+
     private List<UserData> findUsers() throws IOException {
         List<UserData> allUsers = new ArrayList<>();
         for (Workspace workspace : workspaces) {
+            if ("Personal Projects".equals(workspace.getName()))
+                continue;
+
             Users users = new Requester<>(Users.class)
                     .request(new UriBuilder().findWorkspacesUsers(workspace.getGid()));
 
