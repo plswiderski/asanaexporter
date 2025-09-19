@@ -28,4 +28,6 @@ public class TaskShort {
     private TaskShortAssignee assignee;
 
     private Parent parent;
+
+    private Recurrence recurrence;
 }

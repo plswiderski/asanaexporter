@@ -1,6 +1,7 @@
 package io.bitbucket.pablo127.asanaexporter;
 
 import io.bitbucket.pablo127.asanaexporter.model.Parent;
+import io.bitbucket.pablo127.asanaexporter.model.Recurrence;
 import io.bitbucket.pablo127.asanaexporter.model.TaskShort;
 import io.bitbucket.pablo127.asanaexporter.model.TaskShortAssignee;
 import io.bitbucket.pablo127.asanaexporter.model.TaskShortProject;
@@ -33,7 +34,6 @@ public final class Main {
 
     private static final Logger logger = LoggerFactory.getLogger(Main.class);
 
-    private static final File RESULT_FILE = new File("asanaTasks.csv");
     private static final File LAST_MODIFICATION_FILE = new File("lastModification.txt");
 
     static String personalAccessToken;
@@ -79,9 +79,18 @@ public final class Main {
             logger.info("Start writing last modification dateTime.");
             main.writeLastModificationDateTime();
             logger.info("Last modification dateTime is written.");
+
+            System.exit(0);
         } catch (Exception e) {
             logger.error("Error occurred while running AsanaExporter.", e);
         }
+    }
+
+    private void generateCsv() throws IOException {
+        final CsvReportGenerator csvReportGenerator = new CsvReportGenerator(tasks, projectsDownloadCommand.getProjectIdToProjectNameMap(),
+                userDownloadCommand.getUsers());
+
+        csvReportGenerator.generateCsv();
     }
 
     private static String loadModifiedSince() {
@@ -111,21 +120,7 @@ public final class Main {
                 new LinkedBlockingDeque<>());
     }
 
-    private void generateCsv() throws IOException {
-        List<String> lines = new ArrayList<>();
-        lines.add("id;createdAt;completedAt;dueOn;modifiedAt;name;assignee;notes;" +
-                "projects;parentTask");
 
-        for (TaskShort task : tasks) {
-            lines.add(
-                    String.join(";", fixNewLines(task.getGid(), task.getCreatedAt(),
-                            task.getCompletedAt(), task.getDueOn(), task.getModifiedAt(), task.getName(),
-                            getAssigneeName(task.getAssignee()), task.getNotes(),
-                            getProjectNames(task.getProjects()),
-                            getTaskName(task.getParent()))));
-        }
-        Files.write(RESULT_FILE.toPath(), lines, StandardCharsets.UTF_8);
-    }
 
     private void removeTaskWithModifiedSinceDateTime() {
         if (modifiedSince != null) {
@@ -149,63 +144,9 @@ public final class Main {
         }
     }
 
-    private String getTaskName(Parent parent) {
-        if (parent == null)
-            return "";
 
-        Optional<TaskShort> first = tasks.stream()
-                .filter(taskShort -> taskShort.getGid().equals(parent.getGid()))
-                .findFirst();
 
-        if (!first.isPresent()) {
-            logger.error("Could not find subtask with id " + parent.getGid());
-            return parent.getGid();
-        }
-        return first.get()
-                .getName();
-    }
 
-    private String getProjectNames(List<TaskShortProject> projects) {
-        if (projects.isEmpty())
-            return "";
-
-        return projects.stream()
-                .map(taskShortProject -> {
-                    String projectName = projectsDownloadCommand.getProjectIdToProjectNameMap()
-                            .get(taskShortProject.getGid());
-                    if (projectName == null) {
-                        throw new RuntimeException("ProjectId " + taskShortProject.getGid() + " was not " +
-                                "recognized as an ID from user's projects.");
-                    }
-                    return projectName;
-                })
-                .collect(Collectors.joining(", "));
-    }
-
-    private String getAssigneeName(TaskShortAssignee assignee) {
-        if (assignee == null || assignee.getGid() == null) {
-            return "";
-        } else {
-            return userDownloadCommand.getUsers()
-                    .stream()
-                    .filter(userData -> assignee.getGid().equals(userData.getGid()))
-                    .map(UserData::getName)
-                    .findFirst()
-                    .orElse("");
-        }
-    }
-
-    private String[] fixNewLines(String... texts) {
-        List<String> fixedTexts = new ArrayList<>();
-        for (String text : texts)
-            fixedTexts.add(text == null
-                    ? ""
-                    : StringEscapeUtils.escapeCsv(
-                    text.replace('\n', ' ')
-                            .replace('\r', ' ')
-                            .replace(';', ' ')));
-        return fixedTexts.toArray(new String[0]);
-    }
 
     private Main(ExecutorService executorService) {
         this.executorService = executorService;

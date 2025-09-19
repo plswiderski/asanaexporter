@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import io.bitbucket.pablo127.asanaexporter.util.JsonMapper;
 import io.bitbucket.pablo127.asanaexporter.util.SleepUtil;
 import okhttp3.Headers;
 import okhttp3.OkHttpClient;
@@ -29,9 +30,7 @@ public class Requester<T> {
 
     public Requester(Class<T> type) {
         this.type = type;
-        objectMapper = new ObjectMapper()
-                .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
-                .registerModule(new JavaTimeModule());
+        objectMapper = JsonMapper.INSTANCE;
     }
 
     public T request(UriBuilder uriBuilder) throws IOException {
