@@ -25,6 +25,8 @@ public class TaskShort {
 
     private List<TaskShortProject> projects;
 
+    private List<TaskMembership> memberships;
+
     private TaskShortAssignee assignee;
 
     private Parent parent;

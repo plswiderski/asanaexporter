@@ -3,9 +3,11 @@ package io.bitbucket.pablo127.asanaexporter;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.bitbucket.pablo127.asanaexporter.model.Parent;
 import io.bitbucket.pablo127.asanaexporter.model.Recurrence;
+import io.bitbucket.pablo127.asanaexporter.model.TaskMembership;
 import io.bitbucket.pablo127.asanaexporter.model.TaskShort;
 import io.bitbucket.pablo127.asanaexporter.model.TaskShortAssignee;
 import io.bitbucket.pablo127.asanaexporter.model.TaskShortProject;
+import io.bitbucket.pablo127.asanaexporter.model.TaskShortSection;
 import io.bitbucket.pablo127.asanaexporter.model.user.UserData;
 import io.bitbucket.pablo127.asanaexporter.util.JsonMapper;
 import lombok.RequiredArgsConstructor;
@@ -37,7 +39,7 @@ final class CsvReportGenerator {
     void generateCsv() throws IOException {
         List<String> lines = new ArrayList<>();
         lines.add("id;createdAt;completedAt;dueOn;modifiedAt;name;assignee;notes;" +
-                "projects;parentTask;recurrence");
+                "projects;parentTask;recurrence;section");
 
         for (TaskShort task : tasks) {
             lines.add(
@@ -46,9 +48,20 @@ final class CsvReportGenerator {
                             getAssigneeName(task.getAssignee()), task.getNotes(),
                             getProjectNames(task.getProjects()),
                             getTaskName(task.getParent()),
-                            getRecurrence(task.getRecurrence()))));
+                            getRecurrence(task.getRecurrence()),
+                            getSection(task.getMemberships()))));
         }
         Files.write(RESULT_FILE.toPath(), lines, StandardCharsets.UTF_8);
+    }
+
+    private String getSection(List<TaskMembership> memberships) {
+        return Optional.ofNullable(memberships)
+                .filter(taskMemberships -> !taskMemberships.isEmpty())
+                .map(taskMemberships -> taskMemberships.get(0))
+                .map(TaskMembership::getSection)
+                .map(TaskShortSection::getName)
+                .filter(name -> !"Untitled section".equals(name))
+                .orElse(null);
     }
 
     private String getRecurrence(Recurrence recurrence) throws JsonProcessingException {
