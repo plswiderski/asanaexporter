@@ -32,4 +32,6 @@ public class TaskShort {
     private Parent parent;
 
     private Recurrence recurrence;
+
+    private List<TaskAttachment> attachments;
 }

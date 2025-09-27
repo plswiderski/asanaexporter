@@ -1,15 +1,9 @@
 package io.bitbucket.pablo127.asanaexporter;
 
-import io.bitbucket.pablo127.asanaexporter.model.Parent;
-import io.bitbucket.pablo127.asanaexporter.model.Recurrence;
 import io.bitbucket.pablo127.asanaexporter.model.TaskShort;
-import io.bitbucket.pablo127.asanaexporter.model.TaskShortAssignee;
-import io.bitbucket.pablo127.asanaexporter.model.TaskShortProject;
 import io.bitbucket.pablo127.asanaexporter.model.Tasks;
-import io.bitbucket.pablo127.asanaexporter.model.user.UserData;
 import io.bitbucket.pablo127.asanaexporter.util.SleepUtil;
 import lombok.Getter;
-import org.apache.commons.text.StringEscapeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,10 +11,8 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
@@ -72,6 +64,8 @@ public final class Main {
             logger.info("Imported " + main.getTasks().size() + " tasks in "
                     + (System.currentTimeMillis() - startTimestamp) / 1000 + " s.");
 
+            main.saveAttachments();
+
             logger.info("Start generate csv.");
             main.generateCsv();
             logger.info("Csv file is generated.");
@@ -84,6 +78,11 @@ public final class Main {
         } catch (Exception e) {
             logger.error("Error occurred while running AsanaExporter.", e);
         }
+    }
+
+    private void saveAttachments() throws IOException {
+        AttachmentsSaver attachmentSaver = new AttachmentsSaver(tasks);
+        attachmentSaver.save();
     }
 
     private void generateCsv() throws IOException {
@@ -120,8 +119,6 @@ public final class Main {
                 new LinkedBlockingDeque<>());
     }
 
-
-
     private void removeTaskWithModifiedSinceDateTime() {
         if (modifiedSince != null) {
             Set<TaskShort> tasksToRemove = tasks.stream()
@@ -143,10 +140,6 @@ public final class Main {
                     StandardCharsets.UTF_8);
         }
     }
-
-
-
-
 
     private Main(ExecutorService executorService) {
         this.executorService = executorService;
@@ -182,7 +175,7 @@ public final class Main {
 
     private void startGettingTasks(UriBuilder uriBuilder, AtomicInteger shutdownCounter) throws IOException {
         Requester<Tasks> requester = new Requester<>(Tasks.class);
-        Tasks tasks = requester.request(uriBuilder);
+        Tasks tasks = requester.requestGet(uriBuilder);
 
         executorService.submit(new NextTasksDownloadCommand(executorService, tasks.getNextPage(), this.tasks,
                 shutdownCounter));

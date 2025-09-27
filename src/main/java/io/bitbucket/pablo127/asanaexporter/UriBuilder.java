@@ -4,8 +4,9 @@ import io.bitbucket.pablo127.asanaexporter.util.StringUtil;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.function.Supplier;
 
-final class UriBuilder {
+final class UriBuilder implements Supplier<URL>  {
 
     private static final String BASE_PATH = "https://app.asana.com/api/1.0/";
 
@@ -15,7 +16,7 @@ final class UriBuilder {
         url = new URL(BASE_PATH + "tasks?workspace=" + workspaceId + "&assignee=" + assigneeId
                 + StringUtil.emptyIfNullOrTransform(modifiedSince, s -> "&modified_since=" + s)
                 + "&limit=100&opt_fields=completed_at,due_on,name,notes,projects,created_at,modified_at," +
-                "assignee,parent,recurrence,memberships.section.name");
+                "assignee,parent,recurrence,memberships.section.name,attachments");
 
         return this;
     }
@@ -24,7 +25,7 @@ final class UriBuilder {
         url = new URL(BASE_PATH + "tasks?project=" + projectId + "&limit=100"
                 + StringUtil.emptyIfNullOrTransform(modifiedSince, s -> "&modified_since=" + s)
                 + "&opt_fields=completed_at,due_on,name,notes,projects,created_at,modified_at,assignee,parent,recurrence" +
-                ",memberships.section.name");
+                ",memberships.section.name,attachments");
 
         return this;
     }
@@ -47,7 +48,8 @@ final class UriBuilder {
         return this;
     }
 
-    public URL getUrl() {
+    @Override
+    public URL get() {
         return url;
     }
 }

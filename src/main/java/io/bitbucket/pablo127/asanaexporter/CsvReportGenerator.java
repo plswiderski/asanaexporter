@@ -3,6 +3,7 @@ package io.bitbucket.pablo127.asanaexporter;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.bitbucket.pablo127.asanaexporter.model.Parent;
 import io.bitbucket.pablo127.asanaexporter.model.Recurrence;
+import io.bitbucket.pablo127.asanaexporter.model.TaskAttachment;
 import io.bitbucket.pablo127.asanaexporter.model.TaskMembership;
 import io.bitbucket.pablo127.asanaexporter.model.TaskShort;
 import io.bitbucket.pablo127.asanaexporter.model.TaskShortAssignee;
@@ -39,7 +40,7 @@ final class CsvReportGenerator {
     void generateCsv() throws IOException {
         List<String> lines = new ArrayList<>();
         lines.add("id;createdAt;completedAt;dueOn;modifiedAt;name;assignee;notes;" +
-                "projects;parentTask;recurrence;section");
+                "projects;parentTask;recurrence;section;attachments");
 
         for (TaskShort task : tasks) {
             lines.add(
@@ -49,7 +50,8 @@ final class CsvReportGenerator {
                             getProjectNames(task.getProjects()),
                             getTaskName(task.getParent()),
                             getRecurrence(task.getRecurrence()),
-                            getSection(task.getMemberships()))));
+                            getSection(task.getMemberships()),
+                            getAttachments(task.getAttachments()))));
         }
         Files.write(RESULT_FILE.toPath(), lines, StandardCharsets.UTF_8);
     }
@@ -62,6 +64,10 @@ final class CsvReportGenerator {
                 .map(TaskShortSection::getName)
                 .filter(name -> !"Untitled section".equals(name))
                 .orElse(null);
+    }
+
+    private String getAttachments(List<TaskAttachment> attachments) throws JsonProcessingException {
+        return JsonMapper.INSTANCE.writeValueAsString(attachments);
     }
 
     private String getRecurrence(Recurrence recurrence) throws JsonProcessingException {

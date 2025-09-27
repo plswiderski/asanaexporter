@@ -40,7 +40,7 @@ class NextTasksDownloadCommand implements Runnable {
             UriBuilder uriBuilder = new UriBuilder().uri(nextPage.getUri());
             executorService.submit(() -> {
                 try {
-                    Tasks tasks = new Requester<>(Tasks.class).request(uriBuilder);
+                    Tasks tasks = new Requester<>(Tasks.class).requestGet(uriBuilder);
 
                     executorService.submit(new NextTasksDownloadCommand(executorService, tasks.getNextPage(),
                             this.tasks, shutdownCounter));

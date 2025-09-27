@@ -37,7 +37,7 @@ public class UserDownloadCommand implements Runnable {
     public void run() {
         try {
             Requester<User> requester = new Requester<>(User.class);
-            UserData userData = requester.request(new UriBuilder().uri("https://app.asana.com/api/1.0/users/me"))
+            UserData userData = requester.requestGet(new UriBuilder().uri("https://app.asana.com/api/1.0/users/me"))
                     .getData();
 
             this.workspaces = userData.getWorkspaces();
@@ -76,7 +76,7 @@ public class UserDownloadCommand implements Runnable {
                 continue;
 
             Users users = new Requester<>(Users.class)
-                    .request(new UriBuilder().findWorkspacesUsers(workspace.getGid()));
+                    .requestGet(new UriBuilder().findWorkspacesUsers(workspace.getGid()));
 
             allUsers.addAll(users.getData());
         }

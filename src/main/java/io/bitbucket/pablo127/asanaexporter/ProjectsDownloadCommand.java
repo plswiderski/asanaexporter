@@ -28,7 +28,7 @@ public class ProjectsDownloadCommand implements Runnable {
     public void run() {
         try {
             Requester<ProjectRequest> requester = new Requester<>(ProjectRequest.class);
-            List<Project> projects = requester.request(new UriBuilder().findProjects(workspaceId))
+            List<Project> projects = requester.requestGet(new UriBuilder().findProjects(workspaceId))
                     .getData();
 
             projects.forEach(project -> projectIdToProjectNameMap.put(project.getGid(), project.getName()));
