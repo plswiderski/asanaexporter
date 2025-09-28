@@ -5,4 +5,5 @@ import lombok.Data;
 @Data
 public class TaskMembership {
     private TaskShortSection section;
+    private Project project;
 }

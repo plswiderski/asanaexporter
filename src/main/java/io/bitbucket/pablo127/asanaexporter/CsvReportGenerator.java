@@ -8,7 +8,6 @@ import io.bitbucket.pablo127.asanaexporter.model.TaskMembership;
 import io.bitbucket.pablo127.asanaexporter.model.TaskShort;
 import io.bitbucket.pablo127.asanaexporter.model.TaskShortAssignee;
 import io.bitbucket.pablo127.asanaexporter.model.TaskShortProject;
-import io.bitbucket.pablo127.asanaexporter.model.TaskShortSection;
 import io.bitbucket.pablo127.asanaexporter.model.user.UserData;
 import io.bitbucket.pablo127.asanaexporter.util.JsonMapper;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +17,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
@@ -40,7 +40,7 @@ final class CsvReportGenerator {
     void generateCsv() throws IOException {
         List<String> lines = new ArrayList<>();
         lines.add("id;createdAt;completedAt;dueOn;modifiedAt;name;assignee;notes;" +
-                "projects;parentTask;recurrence;section;attachments");
+                "projects;parentTask;recurrence;sections;attachments");
 
         for (TaskShort task : tasks) {
             lines.add(
@@ -50,19 +50,25 @@ final class CsvReportGenerator {
                             getProjectNames(task.getProjects()),
                             getTaskName(task.getParent()),
                             getRecurrence(task.getRecurrence()),
-                            getSection(task.getMemberships()),
+                            getSections(task.getMemberships()),
                             getAttachments(task.getAttachments()))));
         }
         Files.write(RESULT_FILE.toPath(), lines, StandardCharsets.UTF_8);
     }
 
-    private String getSection(List<TaskMembership> memberships) {
+    private String getSections(List<TaskMembership> memberships) {
         return Optional.ofNullable(memberships)
                 .filter(taskMemberships -> !taskMemberships.isEmpty())
-                .map(taskMemberships -> taskMemberships.get(0))
-                .map(TaskMembership::getSection)
-                .map(TaskShortSection::getName)
-                .filter(name -> !"Untitled section".equals(name))
+                .map(taskMemberships -> taskMemberships.stream()
+                        .filter(taskMembership -> !"Untitled section".equals(taskMembership.getSection().getName()))
+                        .collect(Collectors.toUnmodifiableList()))
+                .map(taskMemberships -> {
+                    try {
+                        return JsonMapper.INSTANCE.writeValueAsString(taskMemberships);
+                    } catch (JsonProcessingException e) {
+                        throw new UncheckedIOException(e);
+                    }
+                })
                 .orElse(null);
     }
 

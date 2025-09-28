@@ -16,7 +16,7 @@ final class UriBuilder implements Supplier<URL>  {
         url = new URL(BASE_PATH + "tasks?workspace=" + workspaceId + "&assignee=" + assigneeId
                 + StringUtil.emptyIfNullOrTransform(modifiedSince, s -> "&modified_since=" + s)
                 + "&limit=100&opt_fields=completed_at,due_on,name,notes,projects,created_at,modified_at," +
-                "assignee,parent,recurrence,memberships.section.name,attachments");
+                "assignee,parent,recurrence,memberships.section.name,memberships.project.name,attachments");
 
         return this;
     }
@@ -24,8 +24,8 @@ final class UriBuilder implements Supplier<URL>  {
     public UriBuilder findTasksByProject(String projectId, String modifiedSince) throws MalformedURLException {
         url = new URL(BASE_PATH + "tasks?project=" + projectId + "&limit=100"
                 + StringUtil.emptyIfNullOrTransform(modifiedSince, s -> "&modified_since=" + s)
-                + "&opt_fields=completed_at,due_on,name,notes,projects,created_at,modified_at,assignee,parent,recurrence" +
-                ",memberships.section.name,attachments");
+                + "&opt_fields=completed_at,due_on,name,notes,projects,created_at,modified_at,assignee,parent,recurrence," +
+                "memberships.section.name,memberships.project.name,attachments");
 
         return this;
     }
