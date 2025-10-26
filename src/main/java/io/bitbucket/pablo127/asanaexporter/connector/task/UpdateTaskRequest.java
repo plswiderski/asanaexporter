@@ -1,4 +1,4 @@
-package io.bitbucket.pablo127.asanaexporter.model;
+package io.bitbucket.pablo127.asanaexporter.connector.task;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -7,8 +7,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class TaskShortSection {
-    private String gid;
-
-    private String name;
+public class UpdateTaskRequest {
+    private TaskToCreateTO data;
 }

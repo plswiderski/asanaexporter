@@ -11,11 +11,11 @@ import io.bitbucket.pablo127.asanaexporter.model.TaskShortProject;
 import io.bitbucket.pablo127.asanaexporter.model.user.UserData;
 import io.bitbucket.pablo127.asanaexporter.util.JsonMapper;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.text.StringEscapeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
@@ -30,8 +30,6 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 final class CsvReportGenerator {
     private static final Logger logger = LoggerFactory.getLogger(CsvReportGenerator.class);
-
-    private static final File RESULT_FILE = new File("asanaTasks.csv");
 
     private final Set<TaskShort> tasks;
     private final Map<String, String> projectIdToProjectNameMap;
@@ -53,7 +51,7 @@ final class CsvReportGenerator {
                             getSections(task.getMemberships()),
                             getAttachments(task.getAttachments()))));
         }
-        Files.write(RESULT_FILE.toPath(), lines, StandardCharsets.UTF_8);
+        Files.write(Main.RESULT_FILE.toPath(), lines, StandardCharsets.UTF_8);
     }
 
     private String getSections(List<TaskMembership> memberships) {
@@ -73,16 +71,24 @@ final class CsvReportGenerator {
     }
 
     private String getAttachments(List<TaskAttachment> attachments) throws JsonProcessingException {
+        if (CollectionUtils.isEmpty(attachments)) {
+            return "";
+        }
+
         return JsonMapper.INSTANCE.writeValueAsString(attachments);
     }
 
     private String getRecurrence(Recurrence recurrence) throws JsonProcessingException {
+        if (recurrence == null || recurrence.getData() == null) {
+            return "";
+        }
+
         return JsonMapper.INSTANCE.writeValueAsString(recurrence);
     }
 
     private String getParent(Parent parent) throws JsonProcessingException {
         if (parent == null) {
-            return null;
+            return "";
         }
 
         return JsonMapper.INSTANCE.writeValueAsString(parent);

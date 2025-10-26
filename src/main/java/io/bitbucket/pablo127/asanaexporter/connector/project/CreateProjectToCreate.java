@@ -1,4 +1,4 @@
-package io.bitbucket.pablo127.asanaexporter.model;
+package io.bitbucket.pablo127.asanaexporter.connector.project;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
@@ -10,10 +10,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 @Data
-public class Workspace {
-    private String gid;
+class CreateProjectToCreate {
     private String name;
 
-    @JsonProperty("resource_type")
-    private String resourceType;
+    @JsonProperty("workspace")
+    private String workspaceGid;
 }
