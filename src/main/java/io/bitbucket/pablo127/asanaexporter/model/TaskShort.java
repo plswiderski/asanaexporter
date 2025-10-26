@@ -23,6 +23,9 @@ public class TaskShort {
     @JsonProperty("modified_at")
     private String modifiedAt;
 
+    @JsonProperty("num_subtasks")
+    private int subtasksCount;
+
     private List<TaskShortProject> projects;
 
     private List<TaskMembership> memberships;

@@ -48,7 +48,7 @@ final class CsvReportGenerator {
                             task.getCompletedAt(), task.getDueOn(), task.getModifiedAt(), task.getName(),
                             getAssigneeName(task.getAssignee()), task.getNotes(),
                             getProjectNames(task.getProjects()),
-                            getTaskName(task.getParent()),
+                            getParent(task.getParent()),
                             getRecurrence(task.getRecurrence()),
                             getSections(task.getMemberships()),
                             getAttachments(task.getAttachments()))));
@@ -78,6 +78,14 @@ final class CsvReportGenerator {
 
     private String getRecurrence(Recurrence recurrence) throws JsonProcessingException {
         return JsonMapper.INSTANCE.writeValueAsString(recurrence);
+    }
+
+    private String getParent(Parent parent) throws JsonProcessingException {
+        if (parent == null) {
+            return null;
+        }
+
+        return JsonMapper.INSTANCE.writeValueAsString(parent);
     }
 
     private String[] fixNewLines(String... texts) {
@@ -128,7 +136,7 @@ final class CsvReportGenerator {
                 .filter(taskShort -> taskShort.getGid().equals(parent.getGid()))
                 .findFirst();
 
-        if (!first.isPresent()) {
+        if (first.isEmpty()) {
             logger.error("Could not find subtask with id " + parent.getGid());
             return parent.getGid();
         }

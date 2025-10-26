@@ -180,6 +180,15 @@ public final class Main {
         executorService.submit(new NextTasksDownloadCommand(executorService, tasks.getNextPage(), this.tasks,
                 shutdownCounter));
         this.tasks.addAll(tasks.getData());
+
+        List<TaskShort> tasksWithSubtasks = tasks.getData()
+                .stream()
+                .filter(taskShort -> taskShort.getSubtasksCount() > 0)
+                .collect(Collectors.toUnmodifiableList());
+
+        for (TaskShort task : tasksWithSubtasks) {
+            startGettingTasks(new UriBuilder().findSubtasks(task.getGid(), modifiedSince), shutdownCounter);
+        }
     }
 
     private static void setDefaultUncaughtExceptionHandler() {
