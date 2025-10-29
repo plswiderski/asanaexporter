@@ -46,12 +46,12 @@ final class AsanaRestorer implements Processor {
         String workspaceId = userDownloadCommand.getWorkspaceId();
 
         ProjectsDownloadCommand projectsDownloadCommand = new ProjectsDownloadCommand(userDownloadCommand.getWorkspaceId());
-        projectsDownloadCommand.run();
+        ProjectsDownloadCommand.DownloadedProjects downloadedProjects = projectsDownloadCommand.run();
 
-        final Map<String, String> projectIdToProjectNameMap = new HashMap<>(projectsDownloadCommand.getProjectIdToProjectNameMap());
-        Function<String, String> projectNameToProjectIdProvider = new ProjectNameToProjectIdProvider(projectIdToProjectNameMap, workspaceId);
+        final Map<String, String> projectIdToProjectNameMap = new HashMap<>(downloadedProjects.getProjectIdToProjectNameMap());
+        Function<Project, String> projectToProjectIdProvider = new ProjectToProjectIdProvider(projectIdToProjectNameMap, workspaceId);
 
-        List<TaskShort> tasks = new CsvReportReader(userDownloadCommand.getUsers(), projectNameToProjectIdProvider)
+        List<TaskShort> tasks = new CsvReportReader(userDownloadCommand.getUsers(), projectToProjectIdProvider)
                 .readTasks();
 
         TasksImporter tasksImporter = new TasksImporter(workspaceId, userDownloadCommand.getUserId(), projectIdToProjectNameMap, null);
@@ -158,31 +158,31 @@ final class AsanaRestorer implements Processor {
         private final String sectionName;
     }
 
-    private static final class ProjectNameToProjectIdProvider implements Function<String, String> {
+    private static final class ProjectToProjectIdProvider implements Function<Project, String> {
         private final Map<String, String> projectIdToProjectNameMap;
         private final ProjectWriteService projectWriteService;
 
-        public ProjectNameToProjectIdProvider(Map<String, String> projectIdToProjectNameMap, String workspaceId) {
+        public ProjectToProjectIdProvider(Map<String, String> projectIdToProjectNameMap, String workspaceId) {
             this.projectIdToProjectNameMap = projectIdToProjectNameMap;
             this.projectWriteService = ProjectWriteServiceFactory.create(workspaceId);
         }
 
         @Override
-        public String apply(String projectName) {
+        public String apply(Project projectToCheck) {
             Optional<String> projectIdOpt = projectIdToProjectNameMap.entrySet()
                     .stream()
-                    .filter(projectIdToProjectName -> projectIdToProjectName.getValue().equals(projectName))
+                    .filter(projectIdToProjectName -> projectToCheck.getName().equals(projectIdToProjectName.getValue()))
                     .map(Map.Entry::getKey)
                     .findFirst();
 
             String projectId;
             if (projectIdOpt.isEmpty()) {
                 try {
-                    logger.info("Created project with name '{}'", projectName);
+                    logger.info("Create project with name '{}'", projectToCheck.getName());
 
-                    final Project project = projectWriteService.createProject(projectName);
+                    final Project project = projectWriteService.createProject(projectToCheck);
                     projectId = project.getGid();
-                    projectIdToProjectNameMap.put(projectId, projectName);
+                    projectIdToProjectNameMap.put(projectId, project.getName());
                 } catch (IOException e) {
                     throw new UncheckedIOException(e);
                 }

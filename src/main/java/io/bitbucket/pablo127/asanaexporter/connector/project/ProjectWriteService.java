@@ -5,5 +5,5 @@ import io.bitbucket.pablo127.asanaexporter.model.Project;
 import java.io.IOException;
 
 public interface ProjectWriteService {
-    Project createProject(String projectName) throws IOException;
+    Project createProject(Project project) throws IOException;
 }

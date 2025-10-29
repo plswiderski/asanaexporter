@@ -15,4 +15,13 @@ class CreateProjectToCreate {
 
     @JsonProperty("workspace")
     private String workspaceGid;
+
+    private String notes;
+
+    @JsonProperty("due_on")
+    private String dueOn;
+
+    private String color;
+
+    private Boolean archived;
 }

@@ -13,6 +13,8 @@ final class UriBuilder implements Supplier<URL>  {
     private static final String TASKS_OPT_FIELDS = "completed_at,due_on,name,notes,projects,created_at,modified_at," +
             "assignee,parent,parent.name,recurrence,memberships.section.name,memberships.project.name,attachments,num_subtasks";
 
+    private static final String PROJECTS_OPT_FIELDS = "archived,name,color,created_at,notes,modified_at,due_on,icon";
+
     private URL url;
 
     public UriBuilder findTasks(String workspaceId, String assigneeId, String modifiedSince) throws MalformedURLException {
@@ -46,7 +48,7 @@ final class UriBuilder implements Supplier<URL>  {
     }
 
     public UriBuilder findProjects(String workspaceId) throws MalformedURLException {
-        url = new URL(BASE_PATH + "projects?workspace=" + workspaceId);
+        url = new URL(BASE_PATH + "projects?workspace=" + workspaceId + "&opt_fields=" + PROJECTS_OPT_FIELDS);
 
         return this;
     }

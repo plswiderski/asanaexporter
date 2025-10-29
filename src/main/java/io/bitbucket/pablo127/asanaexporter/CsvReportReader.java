@@ -7,6 +7,7 @@ import com.opencsv.CSVParserBuilder;
 import com.opencsv.CSVReader;
 import com.opencsv.CSVReaderBuilder;
 import io.bitbucket.pablo127.asanaexporter.model.Parent;
+import io.bitbucket.pablo127.asanaexporter.model.Project;
 import io.bitbucket.pablo127.asanaexporter.model.Recurrence;
 import io.bitbucket.pablo127.asanaexporter.model.TaskAttachment;
 import io.bitbucket.pablo127.asanaexporter.model.TaskMembership;
@@ -23,7 +24,6 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.file.Files;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -32,7 +32,7 @@ import java.util.stream.Collectors;
 final class CsvReportReader {
 
     private final List<UserData> users;
-    private final Function<String, String> projectNameToProjectIdProvider;
+    private final Function<Project, String> projectToProjectIdProvider;
 
     List<TaskShort> readTasks() throws IOException  {
         final List<TaskShort> taskShorts = new ArrayList<>();
@@ -54,7 +54,7 @@ final class CsvReportReader {
                         .name(columns[5].trim())
                         .assignee(getAssignee(columns[6]))
                         .notes(columns[7])
-                        .projects(getProjectNames(columns[8]))
+                        .projects(getProjects(columns[8]))
                         .recurrence(getRecurrence(columns[10]))
                         .memberships(getSections(columns[11]))
                         .attachments(getAttachments(columns[12]))
@@ -106,12 +106,18 @@ final class CsvReportReader {
         return JsonMapper.INSTANCE.readValue(text, Recurrence.class);
     }
 
-    private List<TaskShortProject> getProjectNames(String text) {
-        return Arrays.stream(text.split(","))
-                .map(String::trim)
-                .filter(name -> !name.isEmpty())
-                .map(name -> TaskShortProject.builder()
-                        .gid(projectNameToProjectIdProvider.apply(name))
+    private List<TaskShortProject> getProjects(String text) throws IOException {
+        if (StringUtils.isEmpty(text)) {
+            return List.of();
+        }
+
+        CollectionType projectListType = JsonMapper.INSTANCE.getTypeFactory().constructCollectionType(List.class, Project.class);
+        List<Project> projects = JsonMapper.INSTANCE.readValue(text, projectListType);
+
+        return projects.stream()
+                .map(projectToProjectIdProvider)
+                .map(projectId ->  TaskShortProject.builder()
+                        .gid(projectId)
                         .build())
                 .collect(Collectors.toUnmodifiableList());
     }

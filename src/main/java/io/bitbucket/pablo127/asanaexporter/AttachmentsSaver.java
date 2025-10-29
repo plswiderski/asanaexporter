@@ -48,7 +48,9 @@ final class AttachmentsSaver {
                         try {
                             return attachmentService.getAttachment(attachmentId);
                         } catch (IOException e) {
-                            throw new UncheckedIOException(e);
+                            final String message = String.format("Could not get attachment with id: '%s' for task '%s'", attachmentId,
+                                    taskShort.getName());
+                            throw new UncheckedIOException(message, e);
                         }
                     })
                     .map(attachment -> {

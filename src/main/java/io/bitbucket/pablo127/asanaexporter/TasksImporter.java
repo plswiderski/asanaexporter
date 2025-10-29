@@ -71,6 +71,7 @@ public final class TasksImporter {
                 .collect(Collectors.toUnmodifiableList());
 
         for (TaskShort task : tasksWithSubtasks) {
+            shutdownCounter.incrementAndGet();
             startGettingTasks(new UriBuilder().findSubtasks(task.getGid(), modifiedSince), executorService, shutdownCounter);
         }
     }

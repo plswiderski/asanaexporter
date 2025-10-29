@@ -1,7 +1,9 @@
 package io.bitbucket.pablo127.asanaexporter;
 
+import io.bitbucket.pablo127.asanaexporter.model.TaskAttachment;
 import io.bitbucket.pablo127.asanaexporter.model.TaskShort;
 import lombok.Getter;
+import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,7 +22,7 @@ final class AsanaBackuper implements Processor {
     private static final File LAST_MODIFICATION_FILE = new File("lastModification.txt");
 
     private final UserDownloadCommand userDownloadCommand;
-    private final ProjectsDownloadCommand projectsDownloadCommand;
+    private final ProjectsDownloadCommand.DownloadedProjects downloadedProjects;
 
     private final String modifiedSince;
 
@@ -33,8 +35,8 @@ final class AsanaBackuper implements Processor {
         userDownloadCommand = new UserDownloadCommand(workspaceName);
         userDownloadCommand.run();
 
-        projectsDownloadCommand = new ProjectsDownloadCommand(userDownloadCommand.getWorkspaceId());
-        projectsDownloadCommand.run();
+        ProjectsDownloadCommand projectsDownloadCommand = new ProjectsDownloadCommand(userDownloadCommand.getWorkspaceId());
+        downloadedProjects = projectsDownloadCommand.run();
     }
 
     private static String loadModifiedSince() {
@@ -56,10 +58,11 @@ final class AsanaBackuper implements Processor {
         long startTimestamp = System.currentTimeMillis();
 
         TasksImporter tasksImporter = new TasksImporter(userDownloadCommand.getWorkspaceId(), userDownloadCommand.getUserId(),
-                projectsDownloadCommand.getProjectIdToProjectNameMap(), modifiedSince);
-        tasks = tasksImporter.importTasks(); // TODO[PS] retest importing tasks
+                downloadedProjects.getProjectIdToProjectNameMap(), modifiedSince);
+        tasks = tasksImporter.importTasks();
 
         removeTaskWithModifiedSinceDateTime();
+        removeExternalAttachments();
 
         logger.info("Imported " + tasks.size() + " tasks in "
                 + (System.currentTimeMillis() - startTimestamp) / 1000 + " s.");
@@ -81,7 +84,7 @@ final class AsanaBackuper implements Processor {
     }
 
     private void generateCsv() throws IOException {
-        final CsvReportGenerator csvReportGenerator = new CsvReportGenerator(tasks, projectsDownloadCommand.getProjectIdToProjectNameMap(),
+        final CsvReportGenerator csvReportGenerator = new CsvReportGenerator(tasks, downloadedProjects.getProjectIdToProjectMap(),
                 userDownloadCommand.getUsers());
 
         csvReportGenerator.generateCsv();
@@ -95,6 +98,26 @@ final class AsanaBackuper implements Processor {
 
             tasks.removeAll(tasksToRemove);
         }
+    }
+
+    private void removeExternalAttachments() {
+        final List<TaskShort> tasksToReprocess = tasks.stream()
+                .filter(taskShort -> CollectionUtils.emptyIfNull(taskShort.getAttachments())
+                        .stream()
+                        .anyMatch(taskAttachment -> "external".equals(taskAttachment.getResourceSubtype())))
+                .collect(Collectors.toUnmodifiableList());
+
+        tasks.removeAll(tasksToReprocess);
+
+        tasksToReprocess.forEach(taskShort -> {
+            List<TaskAttachment> newAttachments = taskShort.getAttachments().stream()
+                    .filter(taskAttachment -> !"external".equals(taskAttachment.getResourceSubtype()))
+                    .collect(Collectors.toUnmodifiableList());
+
+            taskShort.setAttachments(newAttachments);
+        });
+
+        tasks.addAll(tasksToReprocess);
     }
 
     private void writeLastModificationDateTime() throws IOException {
