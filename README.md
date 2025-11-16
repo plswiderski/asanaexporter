@@ -10,7 +10,7 @@ Tutorials for this tool are available on my blog:
 
 The jar is located in the folder `/build/libs`.
 
-You can download built project from https://plswiderski.github.io/asanaexporter/asanaexporter-all-1.1.2.jar
+You can download built project from https://github.com/plswiderski/asanaexporter/releases
 
 Project is based on JVM 11. If you are using newer one, please build with JVM 11 by setting `JAVA_HOME` environment variable.
 
@@ -19,11 +19,11 @@ Built artifact can be run by any newer than JVM 11.
 ## Run
 Run exporter by:
 
-`java -jar asanaexporter-all-1.1.2.jar $personalAccessToken`
+`java -jar asanaexporter-all-2.0.0.jar $personalAccessToken`
 
 or
 
-`java -jar asanaexporter-all-1.1.2.jar $personalAccessToken "YOUR WORKSPACE NAME" "MODE"`
+`java -jar asanaexporter-all-2.0.0.jar $personalAccessToken "YOUR WORKSPACE NAME" "MODE"`
 
 `personalAccessToken` is an authorization token for your asana account (more: https://asana.com/developers/documentation/getting-started/auth#personal-access-token). You can generate it from asana settings panel, click on your logo (top right corner) in asana webpanel. Then select `My Profile Settings > Apps > Manage Developer Apps > Create New Personal Access Token`. 
 
@@ -46,7 +46,7 @@ The tool may not handle each case of task types or structure. Please perform ver
 
 Run verification by command:
 ```
-java -cp asanaexporter-all-1.1.2.jar io.bitbucket.pablo127.asanaexporter.BackupsComparatorMain "pathToBaseCsvFile" "pathToCurrentCsvFile"
+java -cp asanaexporter-all-2.0.0.jar io.bitbucket.pablo127.asanaexporter.BackupsComparatorMain "pathToBaseCsvFile" "pathToCurrentCsvFile"
 ```
 
 First pass path to the base one - file that restore was based on.
