@@ -8,6 +8,7 @@ import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import okhttp3.Headers;
 import okhttp3.MediaType;
+import okhttp3.MultipartBody;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
@@ -19,6 +20,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.net.SocketTimeoutException;
 import java.net.URL;
+import java.util.Map;
 import java.util.function.Supplier;
 
 import static io.bitbucket.pablo127.asanaexporter.Main.personalAccessToken;
@@ -48,6 +50,10 @@ public final class Requester<T> {
         return request(urlSupplier, "POST", body);
     }
 
+    public T requestPut(Supplier<URL> urlSupplier, Object body) throws IOException {
+        return request(urlSupplier, "PUT", body);
+    }
+
     private T request(Supplier<URL> urlSupplier, String method, Object body) throws IOException {
         RequestBody requestBody = createRequestBody(body);
         final Request request = createRequest(urlSupplier.get(), method, requestBody);
@@ -60,7 +66,7 @@ public final class Requester<T> {
 
             if (isObtainingFileType()) {
                 final byte[] bytes = responseBody.bytes();
-                return (T) new BytesArrayResult(bytes);
+                return (T) new BytesArrayResult(bytes, null, Map.of());
             }
 
             return objectMapper.readValue(responseBody.string(), type);
@@ -78,6 +84,16 @@ public final class Requester<T> {
     private RequestBody createRequestBody(Object body) throws JsonProcessingException {
         if (body == null) {
             return null;
+        }
+
+        if (body instanceof BytesArrayResult) {
+            final RequestBody fileBody = RequestBody.create(MediaType.parse("multipart/form-data"), ((BytesArrayResult) body).getBytes());
+            final MultipartBody.Builder builder = new MultipartBody.Builder()
+                    .setType(MultipartBody.FORM);
+            ((BytesArrayResult) body).getParams().forEach(builder::addFormDataPart);
+
+            return builder.addFormDataPart("file", ((BytesArrayResult) body).getFilename(),fileBody)
+                    .build();
         }
 
         String bodyJson = objectMapper.writeValueAsString(body);
@@ -111,5 +127,7 @@ public final class Requester<T> {
     @RequiredArgsConstructor
     public static final class BytesArrayResult {
         private final byte[] bytes;
+        private final String filename;
+        private final Map<String, String> params;
     }
 }

@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
 
 class NextTasksDownloadCommand implements Runnable {
 
@@ -17,15 +18,17 @@ class NextTasksDownloadCommand implements Runnable {
 
     private final Set<TaskShort> tasks;
     private final AtomicInteger shutdownCounter;
-    private ExecutorService executorService;
-    private NextPage nextPage;
+    private final Consumer<Tasks> subtasksDownloader;
+    private final ExecutorService executorService;
+    private final NextPage nextPage;
 
     NextTasksDownloadCommand(ExecutorService executorService, NextPage nextPage, Set<TaskShort> tasks,
-                             AtomicInteger shutdownCounter) {
+                             AtomicInteger shutdownCounter, Consumer<Tasks> subtasksDownloader) {
         this.executorService = executorService;
         this.nextPage = nextPage;
         this.tasks = tasks;
         this.shutdownCounter = shutdownCounter;
+        this.subtasksDownloader = subtasksDownloader;
     }
 
     @Override
@@ -43,9 +46,11 @@ class NextTasksDownloadCommand implements Runnable {
                     Tasks tasks = new Requester<>(Tasks.class).requestGet(uriBuilder);
 
                     executorService.submit(new NextTasksDownloadCommand(executorService, tasks.getNextPage(),
-                            this.tasks, shutdownCounter));
+                            this.tasks, shutdownCounter, subtasksDownloader));
                     this.tasks.addAll(tasks.getData());
                     logger.info("Downloaded {} tasks.", this.tasks.size());
+
+                    subtasksDownloader.accept(tasks);
                 } catch (IOException e) {
                     logger.error("Unexpected exception occurred.", e);
                 }

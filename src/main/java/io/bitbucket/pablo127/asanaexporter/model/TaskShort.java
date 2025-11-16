@@ -1,10 +1,16 @@
 package io.bitbucket.pablo127.asanaexporter.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.List;
 
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @Data
 public class TaskShort {
     private String gid;
@@ -37,4 +43,9 @@ public class TaskShort {
     private Recurrence recurrence;
 
     private List<TaskAttachment> attachments;
+
+    private Workspace workspace;
+
+    @JsonProperty("assignee_section")
+    private TaskAssigneeSection assigneeSection;
 }

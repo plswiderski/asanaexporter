@@ -20,17 +20,17 @@ import java.util.stream.Collectors;
 final class AttachmentsSaver {
     private static final Logger logger = LoggerFactory.getLogger(AttachmentsSaver.class);
 
-    private static final File ATTACHMENTS_RESULT_FILE = new File("attachments");
-
     private final Set<TaskShort> tasks;
     private final AttachmentService attachmentService;
+    private final AttachmentPathProvider attachmentPathProvider;
 
     public AttachmentsSaver(Set<TaskShort> tasks) {
         this.tasks = tasks;
         this.attachmentService = AttachmentServiceFactory.create();
+        this.attachmentPathProvider = new AttachmentPathProvider();
     }
 
-    void save() throws IOException {
+    void save() {
         List<TaskShort> attachmentTasksToSave = tasks.stream()
                 .filter(taskShort -> taskShort.getAttachments() != null && !taskShort.getAttachments().isEmpty())
                 .collect(Collectors.toUnmodifiableList());
@@ -39,7 +39,7 @@ final class AttachmentsSaver {
             return;
         }
 
-        logger.info(String.format("Start to save attachments in %s", ATTACHMENTS_RESULT_FILE.getAbsolutePath()));
+        logger.info(String.format("Start to save attachments in %s", attachmentPathProvider.getBaseDir().getAbsolutePath()));
         for (TaskShort taskShort : attachmentTasksToSave) {
             List<AttachmentFile> attachments = taskShort.getAttachments()
                     .stream()
@@ -48,15 +48,14 @@ final class AttachmentsSaver {
                         try {
                             return attachmentService.getAttachment(attachmentId);
                         } catch (IOException e) {
-                            throw new UncheckedIOException(e);
+                            final String message = String.format("Could not get attachment with id: '%s' for task '%s'", attachmentId,
+                                    taskShort.getName());
+                            throw new UncheckedIOException(message, e);
                         }
                     })
                     .map(attachment -> {
                         try {
-                            final File directory = new File(ATTACHMENTS_RESULT_FILE, taskShort.getGid());
-                            directory.mkdirs();
-
-                            File file = new File(directory, attachment.getAttachmentDescriptor().getName());
+                            File file = attachmentPathProvider.apply(taskShort.getGid(), attachment.getAttachmentDescriptor().getName());
                             logger.info("Save attachment to " + file.getAbsolutePath());
 
                             Files.write(file.toPath(), attachment.getContent(), StandardOpenOption.CREATE);
